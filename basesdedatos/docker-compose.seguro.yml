@@ -1,0 +1,22 @@
+services:
+  seguro-db:
+    image: postgres:16-alpine
+    container_name: seguro_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: seguro_db
+      POSTGRES_USER: seguro_user
+      POSTGRES_PASSWORD: seguro_pass
+    ports:
+      - "5434:5432"
+    volumes:
+      - seguro_data:/var/lib/postgresql/data
+      - ./seguro/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U seguro_user -d seguro_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  seguro_data:
