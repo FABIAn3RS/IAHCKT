@@ -5,6 +5,7 @@
       "parameters": {
         "httpMethod": "POST",
         "path": "/comprobacion",
+        "responseMode": "responseNode",
         "options": {}
       },
       "type": "n8n-nodes-base.webhook",
@@ -136,7 +137,7 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "INSERT INTO admission_events\n    (cedula, motivo_ingreso, hospital, decision, poliza_vigente,\n     cobertura_pct, alerta, mensaje_hospital, mensaje_gestor)\nVALUES (\n    '{{ $('Webhook').first().json.body.cedula }}',\n    '{{ $('Webhook').first().json.body.motivo_ingreso }}',\n    '{{ $('Webhook').first().json.body.hospitalid }}',\n    '{{ $json.decision }}',\n    {{ $json.poliza_vigente }},\n    {{ $json.cobertura_pct }},\n    '{{ $json.alerta }}',\n    '{{ $json.mensaje_hospital }}',\n    '{{ $json.mensaje_gestor }}'\n)",
+        "query": "INSERT INTO admission_events\n    (cedula, motivo_ingreso, hospital, decision, poliza_vigente,\n     cobertura_pct, alerta, mensaje_hospital, mensaje_gestor)\nVALUES (\n    '{{ $('Webhook').first().json.body.cedula }}',\n    '{{ $('Webhook').first().json.body.motivo_ingreso }}',\n    '{{ $('Webhook').first().json.body.hospitalid }}',\n    '{{ $json.decision }}',\n    {{ $json.poliza_vigente }},\n    {{ $json.cobertura_pct }},\n    '{{ $json.alerta }}',\n    '{{ $json.mensaje_hospital }}',\n    '{{ $json.mensaje_gestor }}'\n)\nRETURNING id",
         "options": {}
       },
       "type": "n8n-nodes-base.postgres",
@@ -169,21 +170,32 @@
     },
     {
       "parameters": {
-        "method": "POST",
-        "url": "http://127.0.0.1:3000/veredicto",
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={\n  \"cedula\": \"{{ $('Webhook').first().json.body.cedula }}\",\n  \"motivo_ingreso\": \"{{ $('Webhook').first().json.body.motivo_ingreso }}\",\n  \"hospital\": \"{{ $('Webhook').first().json.body.hospitalid }}\",\n  \"decision\": \"{{ $('Code in JavaScript2').first().json.decision }}\",\n  \"poliza_vigente\": \"{{ $('Code in JavaScript2').first().json.poliza_vigente }}\",\n  \"cobertura_pct\": \"{{ $('Code in JavaScript2').first().json.cobertura_pct }}\",\n  \"alerta\": \"{{ $('Code in JavaScript2').first().json.alerta }}\",\n  \"mensaje_hospital\": \"{{ $('Code in JavaScript2').first().json.mensaje_hospital }}\",\n  \"mensaje_gestor\": \"{{ $('Code in JavaScript2').first().json.mensaje_gestor }}\"\n}",
+        "url": "=http://host.docker.internal:3000/veredicto/{{ $json.id }}",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [
-        976,
+        960,
         -48
       ],
-      "id": "5818c100-ccbf-4998-86ef-9271b4b38b15",
+      "id": "1d1af262-8897-48b2-add8-83cd92bff6d3",
       "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"id\": {{ $('Execute a SQL query').first().json.id }} }",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1168,
+        -48
+      ],
+      "id": "9b326ba4-8a22-4943-b156-8b29826e0a0e",
+      "name": "Respond to Webhook"
     }
   ],
   "pinData": {},
@@ -291,6 +303,17 @@
           }
         ]
       ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": true,
@@ -298,7 +321,7 @@
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "versionId": "1e4ed89d-26c7-40d5-bf32-9e9d122a4b40",
+  "versionId": "fc84d7a7-4264-4c74-840d-eef1c6660bfa",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "5d650ce29ca181df7476dd8ca6f1e444e9630bf519aed665bf6a22e9c75eb753"
