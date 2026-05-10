@@ -1,0 +1,111 @@
+<div class="form-card">
+  <!-- Encabezado -->
+  <div class="form-header">
+    <div class="icon-wrap">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+        <path d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2"/>
+        <path d="M9 3m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v0a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z"/>
+        <path d="M10 14h4"/><path d="M12 12v4"/>
+      </svg>
+    </div>
+    <div>
+      <h2>Datos del asegurado</h2>
+      <p>Registro de ingreso hospitalario</p>
+    </div>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+
+    <!-- Cédula + Fecha -->
+    <div class="row">
+      <div class="field">
+        <label for="cedula">Cédula <span class="req">*</span></label>
+        <input
+          id="cedula"
+          type="text"
+          formControlName="cedula"
+          placeholder="0000000000"
+          maxlength="13"
+          [class.is-invalid]="isInvalid('cedula')"
+        />
+        <span class="error-msg" *ngIf="isInvalid('cedula')">
+          <ng-container *ngIf="f['cedula'].errors?.['required']">La cédula es obligatoria.</ng-container>
+          <ng-container *ngIf="f['cedula'].errors?.['minlength']">Mínimo 6 caracteres.</ng-container>
+        </span>
+      </div>
+
+      <div class="field">
+        <label for="creado_en">Fecha de creación <span class="req">*</span></label>
+        <input
+          id="creado_en"
+          type="datetime-local"
+          formControlName="creado_en"
+          [class.is-invalid]="isInvalid('creado_en')"
+        />
+        <span class="error-msg" *ngIf="isInvalid('creado_en')">La fecha es obligatoria.</span>
+      </div>
+    </div>
+
+    <!-- Nombre -->
+    <div class="field">
+      <label for="nombre">Nombre completo <span class="req">*</span></label>
+      <input
+        id="nombre"
+        type="text"
+        formControlName="nombre"
+        placeholder="Ej. Juan Pérez Mora"
+        [class.is-invalid]="isInvalid('nombre')"
+      />
+      <span class="error-msg" *ngIf="isInvalid('nombre')">El nombre es obligatorio.</span>
+    </div>
+
+    <!-- Hospital -->
+    <div class="field">
+      <label for="id_hospital">Hospital <span class="req">*</span></label>
+      <select
+        id="id_hospital"
+        formControlName="id_hospital"
+        [class.is-invalid]="isInvalid('id_hospital')"
+      >
+        <option value="">— Seleccione un hospital —</option>
+        <option *ngFor="let h of hospitales" [value]="h.id">{{ h.nombre }}</option>
+      </select>
+      <span class="error-msg" *ngIf="isInvalid('id_hospital')">Seleccione un hospital.</span>
+    </div>
+
+    <!-- Motivo de ingreso -->
+    <div class="field">
+      <label for="motivo_ingreso">Motivo de ingreso <span class="req">*</span></label>
+      <textarea
+        id="motivo_ingreso"
+        formControlName="motivo_ingreso"
+        rows="4"
+        placeholder="Describa el motivo del ingreso del paciente…"
+        [class.is-invalid]="isInvalid('motivo_ingreso')"
+      ></textarea>
+      <span class="hint">Mínimo 10 caracteres.</span>
+      <span class="error-msg" *ngIf="isInvalid('motivo_ingreso')">
+        <ng-container *ngIf="f['motivo_ingreso'].errors?.['required']">El motivo es obligatorio.</ng-container>
+        <ng-container *ngIf="f['motivo_ingreso'].errors?.['minlength']">Ingrese al menos 10 caracteres.</ng-container>
+      </span>
+    </div>
+
+    <!-- Acciones -->
+    <div class="form-footer">
+      <button type="button" class="btn-cancel" (click)="onCancelar()">Cancelar</button>
+      <button type="submit" class="btn-submit">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+          <path d="M6 4h10l4 4v10a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2"/>
+          <path d="M12 14m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"/>
+          <path d="M14 4l0 4l-6 0l0 -4"/>
+        </svg>
+        Guardar registro
+      </button>
+    </div>
+
+  </form>
+</div>
