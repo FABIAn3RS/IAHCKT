@@ -1,0 +1,15 @@
+<p>hook works!</p>
+
+<button (click)="enviarDatos()">Enviar a N8N</button>
+
+<p *ngIf="cargando">Procesando...</p>
+
+<div *ngIf="veredicto">
+
+    <h3>Veredicto: {{ veredicto.decision }}</h3>
+    <p>Cobertura: {{ veredicto.cobertura_pct }}%</p>
+    <p>{{ veredicto.mensaje_hospital }}</p>
+    <p *ngIf="veredicto.alerta !== 'null'">⚠️ {{ veredicto.alerta }}</p>
+    <p>ID actual: {{ ultimoId }}</p>
+    <p>Cargando: {{ cargando }}</p>
+</div>

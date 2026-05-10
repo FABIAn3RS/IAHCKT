@@ -4,7 +4,7 @@ services:
     container_name: seguro_db
     restart: unless-stopped
     environment:
-      POSTGRES_DB: seguro_db
+      POSTGRES_DB: seguro_db  
       POSTGRES_USER: seguro_user
       POSTGRES_PASSWORD: seguro_pass
     ports:

@@ -44,6 +44,22 @@ CREATE TABLE IF NOT EXISTS coverage_exceptions (
     created_at      TIMESTAMPTZ  DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS admission_events (
+    id               SERIAL PRIMARY KEY,
+    cedula           VARCHAR(13)   NOT NULL,
+    motivo_ingreso   VARCHAR(200)  NOT NULL,
+    hospital         VARCHAR(120),
+    decision         VARCHAR(30)   NOT NULL,
+    poliza_vigente   BOOLEAN,
+    cobertura_pct    NUMERIC(5,2),
+    alerta           TEXT,
+    mensaje_hospital TEXT,
+    mensaje_gestor   TEXT,
+    created_at       TIMESTAMPTZ   DEFAULT NOW()
+);
+
+CREATE INDEX idx_admission_cedula    ON admission_events(cedula);
+CREATE INDEX idx_admission_created   ON admission_events(created_at DESC);
 CREATE INDEX idx_policies_insured     ON policies(insured_id);
 CREATE INDEX idx_policies_number      ON policies(policy_number);
 CREATE INDEX idx_insured_cedula       ON insured(cedula);
