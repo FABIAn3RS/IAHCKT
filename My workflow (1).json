@@ -1,0 +1,331 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "/comprobacion",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -640,
+        -64
+      ],
+      "id": "ff06c1f1-f8ef-43fa-926e-645fa28f5c73",
+      "name": "Webhook",
+      "webhookId": "8f161a65-60d1-42c0-90a3-933329ae7861"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Eres un agente de verificación de seguros médicos de una aseguradora ecuatoriana.\n\nDATOS DE LA PÓLIZA:\n{{ JSON.stringify($('DBSEGURO').first().json) }}\n\nPRE-EXISTENCIAS DEL PACIENTE:\n{{ JSON.stringify($('DBHOSPITAL').all().map(i => i.json)) }}\n\nMOTIVO DE INGRESO:\n{{ $('Webhook').first().json.body.motivo_ingreso }}\n\nINSTRUCCIONES:\n1. Verifica si la póliza está vigente comparando fecha_fin con la fecha actual\n2. Verifica si el consumido_anual es menor al limite_anual\n3. Analiza si el motivo de ingreso se relaciona con alguna pre-existencia usando criterio médico\n4. Calcula la cobertura real aplicable\n\nResponde ÚNICAMENTE con este JSON, sin texto adicional, sin bloques de código:\n{\n  \"decision\": \"aprobado\" | \"aprobado_con_alerta\" | \"rechazado\",\n  \"poliza_vigente\": true | false,\n  \"cobertura_pct\": numero,\n  \"alerta\": \"descripcion o null\",\n  \"mensaje_hospital\": \"texto para admisiones\",\n  \"mensaje_gestor\": \"texto para gestor de casos\"\n}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        240,
+        -48
+      ],
+      "id": "60a2a694-726f-4310-afe4-967c4be532ef",
+      "name": "Message a model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "IDSW8oPzQlUVobj9",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const cedula = $input.first().json.body.cedula;\n\nreturn [{\n  json: {\n    cedula,\n    query: `\n      SELECT pc.codigo_cie10, pc.descripcion, pc.severidad,\n             pc.activa, pc.fecha_dx, pc.notas\n      FROM preexisting_conditions pc\n      JOIN patients pt ON pt.id = pc.patient_id\n      WHERE pt.cedula = '${cedula}'\n        AND pc.activa = TRUE\n    `\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -400,
+        -176
+      ],
+      "id": "53f9f737-99f6-4600-bf34-cc2bb6e19faf",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "jsCode": "const cedula = $input.first().json.body.cedula;\n\nreturn [{\n  json: {\n    cedula,\n    query: `\n      SELECT p.policy_number, p.estado, p.fecha_inicio, p.fecha_fin,\n             p.consumido_anual, pl.nombre as plan, pl.cobertura_pct,\n             pl.limite_anual, pl.deducible, pl.cubre_preexistencias,\n             p.gestor_casos_email\n      FROM policies p\n      JOIN insured i ON i.id = p.insured_id\n      JOIN plans pl ON pl.id = p.plan_id\n      WHERE i.cedula = '${cedula}'\n      LIMIT 1\n    `\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -416,
+        64
+      ],
+      "id": "539b30fc-7902-44b3-b1ce-a7a068693668",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "{{ $json.query }}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -240,
+        -176
+      ],
+      "id": "45a4fff1-b6cb-42a5-95f3-fc01ba1991f6",
+      "name": "DBHOSPITAL",
+      "alwaysOutputData": false,
+      "credentials": {
+        "postgres": {
+          "id": "muduYbkRhXVneRwu",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "{{ $json.query }}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -240,
+        64
+      ],
+      "id": "9a642b42-70aa-4534-8050-ff9f791bdcd4",
+      "name": "DBSEGURO",
+      "alwaysOutputData": false,
+      "credentials": {
+        "postgres": {
+          "id": "ExvwK6Tseeei3fQN",
+          "name": "Postgres account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $input.first().json.content.parts[0].text;\nconst cleaned = raw.replace(/```json|```/g, '').trim();\nconst verdict = JSON.parse(cleaned);\n\n// Escapar comillas simples para SQL\nconst escape = (str) => str ? str.replace(/'/g, \"''\") : null;\n\nreturn [{\n  json: {\n    ...verdict,\n    alerta: escape(verdict.alerta),\n    mensaje_hospital: escape(verdict.mensaje_hospital),\n    mensaje_gestor: escape(verdict.mensaje_gestor)\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        560,
+        -48
+      ],
+      "id": "c29fe57f-bcc3-4fb5-b610-ad15b1f05220",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO admission_events\n    (cedula, motivo_ingreso, hospital, decision, poliza_vigente,\n     cobertura_pct, alerta, mensaje_hospital, mensaje_gestor)\nVALUES (\n    '{{ $('Webhook').first().json.body.cedula }}',\n    '{{ $('Webhook').first().json.body.motivo_ingreso }}',\n    '{{ $('Webhook').first().json.body.hospitalid }}',\n    '{{ $json.decision }}',\n    {{ $json.poliza_vigente }},\n    {{ $json.cobertura_pct }},\n    '{{ $json.alerta }}',\n    '{{ $json.mensaje_hospital }}',\n    '{{ $json.mensaje_gestor }}'\n)\nRETURNING id",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        752,
+        -48
+      ],
+      "id": "8c7f7a9e-0949-42b5-872d-adfd181b409d",
+      "name": "Execute a SQL query",
+      "credentials": {
+        "postgres": {
+          "id": "ExvwK6Tseeei3fQN",
+          "name": "Postgres account 2"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        32,
+        -48
+      ],
+      "id": "fe062bc8-4b6c-40a0-8780-26548ad2c4f1",
+      "name": "Merge",
+      "alwaysOutputData": false,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "url": "=http://host.docker.internal:3000/veredicto/{{ $json.id }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        960,
+        -48
+      ],
+      "id": "1d1af262-8897-48b2-add8-83cd92bff6d3",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"id\": {{ $('Execute a SQL query').first().json.id }} }",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1168,
+        -48
+      ],
+      "id": "9b326ba4-8a22-4943-b156-8b29826e0a0e",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "DBHOSPITAL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "DBSEGURO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DBHOSPITAL": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DBSEGURO": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "fc84d7a7-4264-4c74-840d-eef1c6660bfa",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5d650ce29ca181df7476dd8ca6f1e444e9630bf519aed665bf6a22e9c75eb753"
+  },
+  "id": "ZaLCB0PHAV7x7PKo",
+  "tags": []
+}
