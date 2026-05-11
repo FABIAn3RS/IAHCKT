@@ -30,10 +30,12 @@
           maxlength="13"
           [class.is-invalid]="isInvalid('cedula')"
         />
-        <span class="error-msg" *ngIf="isInvalid('cedula')">
-          <ng-container *ngIf="f['cedula'].errors?.['required']">La cédula es obligatoria.</ng-container>
-          <ng-container *ngIf="f['cedula'].errors?.['minlength']">Mínimo 6 caracteres.</ng-container>
-        </span>
+        @if (isInvalid('cedula')) {
+          <span class="error-msg">
+            @if (f['cedula'].errors?.['required'])   { La cédula es obligatoria. }
+            @if (f['cedula'].errors?.['minlength'])  { Mínimo 6 caracteres. }
+          </span>
+        }
       </div>
 
       <div class="field">
@@ -44,7 +46,9 @@
           formControlName="creado_en"
           [class.is-invalid]="isInvalid('creado_en')"
         />
-        <span class="error-msg" *ngIf="isInvalid('creado_en')">La fecha es obligatoria.</span>
+        @if (isInvalid('creado_en')) {
+          <span class="error-msg">La fecha es obligatoria.</span>
+        }
       </div>
     </div>
 
@@ -58,21 +62,24 @@
         placeholder="Ej. Juan Pérez Mora"
         [class.is-invalid]="isInvalid('nombre')"
       />
-      <span class="error-msg" *ngIf="isInvalid('nombre')">El nombre es obligatorio.</span>
+      @if (isInvalid('nombre')) {
+        <span class="error-msg">El nombre es obligatorio.</span>
+      }
     </div>
 
-    <!-- Hospital -->
+    <!-- ID Hospital -->
     <div class="field">
-      <label for="id_hospital">Hospital <span class="req">*</span></label>
-      <select
+      <label for="id_hospital">ID Hospital <span class="req">*</span></label>
+      <input
         id="id_hospital"
+        type="text"
         formControlName="id_hospital"
+        placeholder="Ej. HOSP123"
         [class.is-invalid]="isInvalid('id_hospital')"
-      >
-        <option value="">— Seleccione un hospital —</option>
-        <option *ngFor="let h of hospitales" [value]="h.id">{{ h.nombre }}</option>
-      </select>
-      <span class="error-msg" *ngIf="isInvalid('id_hospital')">Seleccione un hospital.</span>
+      />
+      @if (isInvalid('id_hospital')) {
+        <span class="error-msg">El ID de hospital es obligatorio.</span>
+      }
     </div>
 
     <!-- Motivo de ingreso -->
@@ -86,15 +93,17 @@
         [class.is-invalid]="isInvalid('motivo_ingreso')"
       ></textarea>
       <span class="hint">Mínimo 10 caracteres.</span>
-      <span class="error-msg" *ngIf="isInvalid('motivo_ingreso')">
-        <ng-container *ngIf="f['motivo_ingreso'].errors?.['required']">El motivo es obligatorio.</ng-container>
-        <ng-container *ngIf="f['motivo_ingreso'].errors?.['minlength']">Ingrese al menos 10 caracteres.</ng-container>
-      </span>
+      @if (isInvalid('motivo_ingreso')) {
+        <span class="error-msg">
+          @if (f['motivo_ingreso'].errors?.['required'])  { El motivo es obligatorio. }
+          @if (f['motivo_ingreso'].errors?.['minlength']) { Ingrese al menos 10 caracteres. }
+        </span>
+      }
     </div>
 
     <!-- Acciones -->
     <div class="form-footer">
-      <button type="button" class="btn-cancel" (click)="onCancelar()">Cancelar</button>
+      <button type="button" class="btn-cancel" (click)="reset()">Cancelar</button>
       <button type="submit" class="btn-submit">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
              fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -103,7 +112,7 @@
           <path d="M12 14m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"/>
           <path d="M14 4l0 4l-6 0l0 -4"/>
         </svg>
-        Guardar registro
+        Enviar a n8n
       </button>
     </div>
 

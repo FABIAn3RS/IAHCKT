@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { DatosAsegurado } from '../../interfaces/datos-asegurado'
+import { DatosAsegurado } from '../../interfaces/datos-asegurado.interface';
+
 @Component({
   selector: 'app-datos-asegurado-form',
   standalone: true,
@@ -10,24 +11,19 @@ import { DatosAsegurado } from '../../interfaces/datos-asegurado'
   styleUrls: ['./datos-asegurado-form.component.scss'],
 })
 export class DatosAseguradoFormComponent implements OnInit {
-  form!: FormGroup;
+  @Output() formSubmit = new EventEmitter<DatosAsegurado>();
 
-  hospitales = [
-    { id: 'H001', nombre: 'Hospital Eugenio Espejo' },
-    { id: 'H002', nombre: 'Hospital Enrique Garcés' },
-    { id: 'H003', nombre: 'Hospital Pablo Arturo Suárez' },
-    { id: 'H004', nombre: 'Hospital Metropolitano' },
-  ];
+  form!: FormGroup;
 
   constructor(private fb: FormBuilder) {}
 
   ngOnInit(): void {
     this.form = this.fb.group({
-      cedula: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(13)]],
-      nombre: ['', [Validators.required, Validators.minLength(2)]],
+      cedula:         ['', [Validators.required, Validators.minLength(6), Validators.maxLength(13)]],
+      nombre:         ['', [Validators.required, Validators.minLength(2)]],
       motivo_ingreso: ['', [Validators.required, Validators.minLength(10)]],
-      id_hospital: ['', Validators.required],
-      creado_en: [new Date().toISOString().slice(0, 16), Validators.required],
+      id_hospital:    ['', [Validators.required]],
+      creado_en:      [new Date().toISOString().slice(0, 16), Validators.required],
     });
   }
 
@@ -45,15 +41,10 @@ export class DatosAseguradoFormComponent implements OnInit {
       this.form.markAllAsTouched();
       return;
     }
-
-    const datos: DatosAsegurado = this.form.getRawValue();
-    console.log('Datos enviados:', datos);
-    // TODO: conectar con el servicio correspondiente
+    this.formSubmit.emit(this.form.getRawValue() as DatosAsegurado);
   }
 
-  onCancelar(): void {
-    this.form.reset({
-      creado_en: new Date().toISOString().slice(0, 16),
-    });
+  reset(): void {
+    this.form.reset({ creado_en: new Date().toISOString().slice(0, 16) });
   }
 }

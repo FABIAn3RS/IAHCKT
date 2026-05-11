@@ -1,11 +1,10 @@
 import { Component, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { Hook } from "./hook/hook";
-import { DatosAseguradoFormComponent } from './components/formulario-datos-asegurado/datos-asegurado-form.component';
+import { RegistroAseguradoPage } from './pages/registro-asegurado/registro-asegurado.page';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, Hook, DatosAseguradoFormComponent],
+  imports: [RouterOutlet, RegistroAseguradoPage],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })

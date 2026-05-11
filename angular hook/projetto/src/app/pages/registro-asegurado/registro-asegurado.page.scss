@@ -1,0 +1,125 @@
+.page-layout {
+  min-height: 100vh;
+  padding: 2rem 1.5rem;
+  background: #f5f6f8;
+  font-family: sans-serif;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 2rem;
+
+  &__icon {
+    width: 44px; height: 44px;
+    background: #e6f1fb;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    color: #185fa5; flex-shrink: 0;
+  }
+
+  &__title {
+    font-size: 20px; font-weight: 600; color: #111; margin: 0;
+  }
+
+  &__subtitle {
+    font-size: 13px; color: #666; margin: 3px 0 0;
+  }
+}
+
+.page-content {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 1.5rem;
+  align-items: start;
+
+  @media (max-width: 860px) { grid-template-columns: 1fr; }
+}
+
+/* Tarjeta de veredicto */
+.result-card {
+  background: #fff;
+  border: 0.5px solid #e2e2e2;
+  border-radius: 12px;
+  overflow: hidden;
+
+  &__header {
+    display: flex; align-items: center; gap: 8px;
+    padding: 12px 16px;
+    border-bottom: 0.5px solid #e2e2e2;
+    font-size: 14px; font-weight: 500; color: #333;
+
+    svg { color: #185fa5; flex-shrink: 0; }
+    span { flex: 1; }
+  }
+}
+
+.btn-refresh {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 12px; font-family: inherit;
+  padding: 4px 10px; border-radius: 6px;
+  border: 0.5px solid #bbb; background: transparent; color: #555;
+  cursor: pointer; transition: background 0.12s;
+  &:hover { background: #f5f5f5; }
+}
+
+/* Estados */
+.result-state {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 12px;
+  padding: 2.5rem 1.5rem; text-align: center;
+
+  p { font-size: 13px; color: #888; margin: 0; }
+  svg { color: #bbb; }
+}
+
+.spinner {
+  width: 28px; height: 28px;
+  border: 3px solid #e2e2e2; border-top-color: #378add;
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Veredicto */
+.veredicto-body {
+  padding: 16px;
+  display: flex; flex-direction: column; gap: 16px;
+}
+
+.veredicto-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+
+  &--col {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+.veredicto-label {
+  font-size: 11px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.05em; color: #999;
+}
+
+.veredicto-text {
+  font-size: 13px; line-height: 1.6; color: #444;
+  margin: 6px 0 0; padding: 10px 12px;
+  background: #f9f9f9; border-radius: 8px;
+  border: 0.5px solid #e8e8e8; width: 100%; box-sizing: border-box;
+
+  &--alerta {
+    background: #fff8e6; border-color: #f0d080; color: #7a5800;
+  }
+}
+
+/* Badge de decisión */
+.badge {
+  font-size: 12px; font-weight: 600;
+  padding: 3px 10px; border-radius: 20px;
+  text-transform: capitalize;
+
+  &--aprobado   { background: #e6f7ee; color: #1a7a45; border: 0.5px solid #a8dbbe; }
+  &--rechazado  { background: #fde8e8; color: #c0392b; border: 0.5px solid #f5b7b1; }
+  &--pendiente  { background: #fff3e0; color: #a05000; border: 0.5px solid #f5cba7; }
+}
