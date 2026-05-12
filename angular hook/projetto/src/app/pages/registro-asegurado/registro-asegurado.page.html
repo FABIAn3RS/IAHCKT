@@ -50,7 +50,7 @@
         @if (aseguradoService.cargando()) {
           <div class="result-state">
             <div class="spinner"></div>
-            <p>Esperando respuesta de n8n…</p>
+            <p>Esperando respuesta</p>
           </div>
         }
 
@@ -83,12 +83,12 @@
             <!-- Alerta -->
             <div class="veredicto-row veredicto-row--col">
               <span class="veredicto-label">Alerta</span>
-              <p class="veredicto-text veredicto-text--alerta">{{ v.alerta }}</p>
+              <p class="veredicto-text veredicto-text--alerta">{{ v.alerta || 'Sin alertas' }}</p>
             </div>
 
             <!-- Mensaje hospital -->
             <div class="veredicto-row veredicto-row--col">
-              <span class="veredicto-label">Mensaje</span>
+              <span class="veredicto-label">Mensaje al hospital</span>
               <p class="veredicto-text">{{ v.mensaje_hospital }}</p>
             </div>
 

@@ -3,6 +3,8 @@
   padding: 2rem 1.5rem;
   background: #f5f6f8;
   font-family: sans-serif;
+  max-width: 1100px;
+  margin: 0 auto;
 }
 
 .page-header {
@@ -19,22 +21,27 @@
     color: #185fa5; flex-shrink: 0;
   }
 
-  &__title {
-    font-size: 20px; font-weight: 600; color: #111; margin: 0;
-  }
-
-  &__subtitle {
-    font-size: 13px; color: #666; margin: 3px 0 0;
-  }
+  &__title { font-size: 20px; font-weight: 600; color: #111; margin: 0; }
+  &__subtitle { font-size: 13px; color: #666; margin: 3px 0 0; }
 }
 
 .page-content {
   display: grid;
-  grid-template-columns: 1fr 380px;
+  grid-template-columns: minmax(0, 620px) 360px;
+  justify-content: center;
   gap: 1.5rem;
   align-items: start;
 
   @media (max-width: 860px) { grid-template-columns: 1fr; }
+}
+
+.section-form {
+  width: 100%;
+
+  ::ng-deep .form-card {
+    max-width: 100%;
+    margin: 0;
+  }
 }
 
 /* Tarjeta de veredicto */
@@ -91,10 +98,7 @@
 .veredicto-row {
   display: flex; align-items: center; justify-content: space-between; gap: 10px;
 
-  &--col {
-    flex-direction: column;
-    align-items: flex-start;
-  }
+  &--col { flex-direction: column; align-items: flex-start; }
 }
 
 .veredicto-label {
@@ -108,18 +112,15 @@
   background: #f9f9f9; border-radius: 8px;
   border: 0.5px solid #e8e8e8; width: 100%; box-sizing: border-box;
 
-  &--alerta {
-    background: #fff8e6; border-color: #f0d080; color: #7a5800;
-  }
+  &--alerta { background: #fff8e6; border-color: #f0d080; color: #7a5800; }
 }
 
-/* Badge de decisión */
+/* Badge */
 .badge {
   font-size: 12px; font-weight: 600;
   padding: 3px 10px; border-radius: 20px;
-  text-transform: capitalize;
 
-  &--aprobado   { background: #e6f7ee; color: #1a7a45; border: 0.5px solid #a8dbbe; }
-  &--rechazado  { background: #fde8e8; color: #c0392b; border: 0.5px solid #f5b7b1; }
-  &--pendiente  { background: #fff3e0; color: #a05000; border: 0.5px solid #f5cba7; }
+  &--aprobado  { background: #e6f7ee; color: #1a7a45; border: 0.5px solid #a8dbbe; }
+  &--rechazado { background: #fde8e8; color: #c0392b; border: 0.5px solid #f5b7b1; }
+  &--pendiente { background: #fff3e0; color: #a05000; border: 0.5px solid #f5cba7; }
 }
