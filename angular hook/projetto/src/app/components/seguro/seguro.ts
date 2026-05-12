@@ -17,8 +17,8 @@ export class Seguro implements OnInit, OnDestroy {
   private intervalo: any;
 
 
-  backendUrl = 'https://reasoning-ciao-aside-marked.trycloudflare.com/veredicto/ultimo';
-
+backendUrl = 'https://retailer-received-vpn-boulder.trycloudflare.com/veredicto/ultimo';
+  
   ngOnInit() {
     this.http.get(this.backendUrl).subscribe((res: any) => {
       if (res.data && res.data.length > 0) {
