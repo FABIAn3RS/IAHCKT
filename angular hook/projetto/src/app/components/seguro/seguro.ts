@@ -13,24 +13,26 @@ export class Seguro implements OnInit, OnDestroy {
   constructor(private http: HttpClient) { }
 
   ultimoId: number | null = null;
-  notificacion = signal<any>(null);
+  notificacion = signal<any[]>([]);
   private intervalo: any;
 
 
   backendUrl = 'http://20.104.155.120:3000/veredicto/ultimo';
 
   ngOnInit() {
-    // guarda el id actual al cargar
     this.http.get(this.backendUrl).subscribe((res: any) => {
-      if (res.data) this.ultimoId = res.data.id;
+      if (res.data && res.data.length > 0) {
+        this.ultimoId = res.data[0].id;
+        this.notificacion.set(res.data); // muestra los 5 al cargar
+      }
     });
 
-    // polling cada 3 segundos
     this.intervalo = setInterval(() => {
       this.http.get(this.backendUrl).subscribe((res: any) => {
-        if (res.data && Number(res.data.id) !== Number(this.ultimoId)) {
+        if (res.data && res.data.length > 0 &&
+          Number(res.data[0].id) !== Number(this.ultimoId)) {
           this.notificacion.set(res.data);
-          this.ultimoId = res.data.id;
+          this.ultimoId = res.data[0].id;
         }
       });
     }, 3000);
