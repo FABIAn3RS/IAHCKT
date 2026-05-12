@@ -26,40 +26,59 @@ private readonly backendUrl = 'https://retailer-received-vpn-boulder.trycloudfla
 
   /** Envía los datos del asegurado al webhook y hace polling hasta recibir el veredicto */
   async enviarDatos(datos: DatosAsegurado): Promise<void> {
-    this.limpiarIntervalo();
-    this.cargando.set(true);
-    this.veredicto.set(null);
+  this.limpiarIntervalo();
+  this.cargando.set(true);
+  this.veredicto.set(null);
 
-    try {
-      const result = await firstValueFrom(
-        this.http.post<{ id: number }>(this.webhookUrl, datos)
-      );
-      console.log('Enviado a n8n:', result);
+  try {
+    // 1. Recibimos la respuesta de n8n
+    const result = await firstValueFrom(
+      this.http.post<any>(this.webhookUrl, datos)
+    );
 
-      const id = result.id;
-
-      this.intervalo = setInterval(async () => {
-        try {
-          const res = await firstValueFrom(
-            this.http.get<VeredictoResponse>(`${this.backendUrl}/${id}`)
-          );
-          console.log('Polling id:', id, res);
-
-          if (res?.data) {
-            this.limpiarIntervalo();
-            this.setVeredicto(res);
-            this.cargando.set(false);
-          }
-        } catch (e) {
-          console.warn('Error en polling, reintentando...', e);
-        }
-      }, 3000);
-
-    } catch (error) {
-      console.error('Error al enviar a n8n:', error);
-      this.cargando.set(false);
+    // NUEVO: Validar si n8n devolvió un error en lugar de un ID
+    if (result.error || !result.id) {
+      this.handleErrorFinal(result.error || 'Error desconocido en n8n');
+      return;
     }
+
+    const id = result.id;
+
+    this.intervalo = setInterval(async () => {
+      try {
+        const res = await firstValueFrom(
+          this.http.get<VeredictoResponse>(`${this.backendUrl}/${id}`)
+        );
+
+        if (res?.data) {
+          this.limpiarIntervalo();
+          this.setVeredicto(res);
+          this.cargando.set(false);
+        }
+      } catch (e: any) {
+        // NUEVO: Si el backend da un error 500 o 404, paramos el polling
+        // No tiene sentido seguir preguntando si el ID no existe o el server explotó
+        console.error('Error crítico en polling:', e);
+        this.handleErrorFinal('Error al consultar el veredicto');
+      }
+    }, 3000);
+
+  } catch (error: any) {
+    console.error('Error al enviar a n8n:', error);
+    this.handleErrorFinal('No se pudo conectar con el servicio');
   }
+}
+
+// Función auxiliar para limpiar todo cuando algo sale mal
+private handleErrorFinal(mensaje: string): void {
+  this.limpiarIntervalo();
+  this.cargando.set(false);
+  this.veredicto.set({
+    decision: 'ERROR',
+    alerta: 'roja',
+    mensaje_hospital: mensaje
+  });
+}
 
   private setVeredicto(res: VeredictoResponse): void {
     const { decision, alerta, mensaje_hospital } = res.data;
