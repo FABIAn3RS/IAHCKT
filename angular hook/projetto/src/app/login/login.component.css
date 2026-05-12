@@ -1,0 +1,173 @@
+.login-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  padding: 20px;
+}
+
+.login-box {
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  padding: 60px 40px;
+  max-width: 900px;
+  width: 100%;
+}
+
+.logo-section {
+  text-align: center;
+  margin-bottom: 50px;
+}
+
+.logo-section h1 {
+  font-size: 48px;
+  color: #333;
+  margin: 0;
+  font-weight: 700;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.logo-section .subtitle {
+  color: #666;
+  font-size: 16px;
+  margin-top: 10px;
+  font-weight: 500;
+}
+
+.modules-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  margin-bottom: 40px;
+}
+
+.module-card {
+  padding: 40px 30px;
+  border-radius: 15px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid #f0f0f0;
+  background: #fafafa;
+}
+
+.module-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+  border-color: transparent;
+}
+
+.hospital-card {
+  background: linear-gradient(135deg, #667eea15 0%, #667eea05 100%);
+}
+
+.hospital-card:hover {
+  background: linear-gradient(135deg, #667eea 0%, #667eea 100%);
+  color: white;
+}
+
+.gestor-card {
+  background: linear-gradient(135deg, #764ba215 0%, #764ba205 100%);
+}
+
+.gestor-card:hover {
+  background: linear-gradient(135deg, #764ba2 0%, #764ba2 100%);
+  color: white;
+}
+
+.icon-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+  color: #667eea;
+}
+
+.gestor-card:hover .icon-wrapper,
+.hospital-card:hover .icon-wrapper {
+  color: white;
+}
+
+.module-card h2 {
+  font-size: 28px;
+  margin: 15px 0;
+  color: #333;
+}
+
+.module-card:hover h2 {
+  color: inherit;
+}
+
+.module-card p {
+  color: #666;
+  font-size: 14px;
+  margin: 0 0 15px 0;
+}
+
+.module-card:hover p {
+  color: inherit;
+}
+
+.badge {
+  display: inline-block;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: #e8e8e8;
+  color: #555;
+  margin-top: 10px;
+}
+
+.hospital-card .badge {
+  background: #667eea20;
+  color: #667eea;
+}
+
+.gestor-card .badge {
+  background: #764ba220;
+  color: #764ba2;
+}
+
+.module-card:hover .badge {
+  background: rgba(255, 255, 255, 0.3);
+  color: white;
+}
+
+.footer-info {
+  text-align: center;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+  color: #999;
+  font-size: 14px;
+}
+
+@media (max-width: 768px) {
+  .modules-grid {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+
+  .login-box {
+    padding: 40px 25px;
+  }
+
+  .logo-section h1 {
+    font-size: 36px;
+  }
+
+  .module-card {
+    padding: 30px 20px;
+  }
+
+  .module-card h2 {
+    font-size: 22px;
+  }
+}

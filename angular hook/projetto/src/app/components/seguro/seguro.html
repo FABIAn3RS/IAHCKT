@@ -1,0 +1,12 @@
+<div *ngIf="notificacion()">
+    <h3>Nueva admisión — {{ notificacion().decision }}</h3>
+    <p>Cédula: {{ notificacion().cedula }}</p>
+    <p>Motivo: {{ notificacion().motivo_ingreso }}</p>
+    <p>Cobertura: {{ notificacion().cobertura_pct }}%</p>
+    <p>{{ notificacion().mensaje_gestor }}</p>
+    <p class="alert" *ngIf="notificacion().alerta">⚠️ {{ notificacion().alerta }}</p>
+</div>
+
+<p class="waiting" *ngIf="!notificacion()">Esperando nuevas admisiones...</p>
+
+<pre class="json-output">{{ notificacion() | json }}</pre>
