@@ -5,8 +5,8 @@ import { DatosAsegurado, Veredicto, VeredictoResponse } from '../interfaces/dato
 
 @Injectable({ providedIn: 'root' })
 export class AseguradoService {
-  private readonly webhookUrl = 'http://localhost:5678/webhook-test/comprobacion';
-  private readonly backendUrl = 'http://localhost:3000/veredicto';
+  private readonly webhookUrl = 'http://20.104.155.120:5678/webhook/comprobacion';
+  private readonly backendUrl = 'http://20.104.155.120:3000/veredicto';
 
   // Ambos como signals para que Angular detecte cambios dentro de setInterval
   cargando = signal(false);

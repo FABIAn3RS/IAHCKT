@@ -1,0 +1,39 @@
+<div class="login-container">
+  <div class="login-box">
+    <div class="logo-section">
+      <h1>IAHCKT</h1>
+      <p class="subtitle">Sistema de Autorización de Emergencias</p>
+    </div>
+
+    <div class="modules-grid">
+      <div class="module-card hospital-card" (click)="irAlHospital()">
+        <div class="icon-wrapper">
+          <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"/>
+            <path d="M12 7v8m-2-2h4"/>
+          </svg>
+        </div>
+        <h2>Hospital</h2>
+        <p>Interfaz de Admisión</p>
+        <span class="badge">Solicitar Autorización</span>
+      </div>
+
+      <div class="module-card gestor-card" (click)="irAlGestor()">
+        <div class="icon-wrapper">
+          <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+            <polyline points="17 21 17 13 7 13 7 21"/>
+            <polyline points="7 3 7 8 15 8"/>
+          </svg>
+        </div>
+        <h2>Gestor de Casos</h2>
+        <p>Análisis y Decisiones</p>
+        <span class="badge">Revisar Solicitudes</span>
+      </div>
+    </div>
+
+    <div class="footer-info">
+      <p>Selecciona el módulo para continuar</p>
+    </div>
+  </div>
+</div>
