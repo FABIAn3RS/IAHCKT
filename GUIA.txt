@@ -1,0 +1,8 @@
+EN LA CARPETA IAHCAKT SE EJECUTA EL COMANDO :n8n  
+EN LA CARPETA BACKEND SE EJECUTA EL COMANDO: node server.js
+EN LA CARPETA BASEDEDATOS SE EEJCUTA EL COMANDO: 
+docker compose -f docker-compose.hospital.yml up -d  
+docker compose -f docker-compose.seguro.yml up -d
+EN LA CARPETA PROJETTO SE EJECUTA EL COMANDO : ng serve
+
+ 
