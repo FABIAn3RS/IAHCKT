@@ -1,0 +1,527 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Eres un agente de verificación de seguros médicos de una aseguradora ecuatoriana.\n\nDATOS DE LA PÓLIZA:\n{{ JSON.stringify($('DBSEGURO1').first().json) }}\n\nPRE-EXISTENCIAS DEL PACIENTE:\n{{ JSON.stringify($('DBHOSPITAL1').all().map(i => i.json)) }}\n\nMOTIVO DE INGRESO:\n{{ $('Webhook').first().json.body.motivo_ingreso }}\n\nINSTRUCCIONES:\n1. Verifica si la póliza está vigente comparando fecha_fin con la fecha actual\n2. Verifica si el consumido_anual es menor al limite_anual\n3. Analiza si el motivo de ingreso se relaciona con alguna pre-existencia usando criterio médico\n4. Calcula la cobertura real aplicable\n\nResponde ÚNICAMENTE con este JSON, sin texto adicional, sin bloques de código:\n{\n  \"decision\": \"aprobado\" | \"aprobado_con_alerta\" | \"rechazado\",\n  \"poliza_vigente\": true | false,\n  \"cobertura_pct\": numero,\n  \"alerta\": \"descripcion o null\",\n  \"mensaje_hospital\": \"texto para admisiones\",\n  \"mensaje_gestor\": \"texto para gestor de casos\"\n}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        1024,
+        128
+      ],
+      "id": "1156d52c-9b23-49b3-9dae-2c44d1a68890",
+      "name": "Message a model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "lfGLHNRwpdJK1DcN",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const cedula = $input.first().json.body.cedula;\n\nreturn [{\n  json: {\n    cedula,\n    query: `\n      SELECT pc.codigo_cie10, pc.descripcion, pc.severidad,\n             pc.activa, pc.fecha_dx, pc.notas\n      FROM preexisting_conditions pc\n      JOIN patients pt ON pt.id = pc.patient_id\n      WHERE pt.cedula = '${cedula}'\n        AND pc.activa = TRUE\n    `\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -32,
+        0
+      ],
+      "id": "3ac81f22-e826-4bd0-b4f9-b5bffc1b64c0",
+      "name": "Code in JavaScript3"
+    },
+    {
+      "parameters": {
+        "jsCode": "const cedula = $input.first().json.body.cedula;\n\nreturn [{\n  json: {\n    cedula,\n    query: `\n      SELECT p.policy_number, p.estado, p.fecha_inicio, p.fecha_fin,\n             p.consumido_anual, pl.nombre as plan, pl.cobertura_pct,\n             pl.limite_anual, pl.deducible, pl.cubre_preexistencias,\n             p.gestor_casos_email\n      FROM policies p\n      JOIN insured i ON i.id = p.insured_id\n      JOIN plans pl ON pl.id = p.plan_id\n      WHERE i.cedula = '${cedula}'\n      LIMIT 1\n    `\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -80,
+        272
+      ],
+      "id": "d49d321a-ed8b-424a-aa22-bf8e6051769e",
+      "name": "Code in JavaScript4"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": " {{ $('Code in JavaScript3').item.json.query }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        592,
+        -112
+      ],
+      "id": "175dd1ba-ba71-4de5-aba2-b2ceffdd943c",
+      "name": "DBHOSPITAL1",
+      "alwaysOutputData": false,
+      "credentials": {
+        "postgres": {
+          "id": "TowNMrmNEqiO9DL3",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "{{ $('Code in JavaScript4').item.json.query }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        592,
+        352
+      ],
+      "id": "b35bdb6e-271d-4492-b081-1f157d385e6b",
+      "name": "DBSEGURO1",
+      "alwaysOutputData": false,
+      "credentials": {
+        "postgres": {
+          "id": "oZh0w95JLHO2Qc5p",
+          "name": "Postgres account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $input.first().json.content.parts[0].text;\nconst cleaned = raw.replace(/```json|```/g, '').trim();\nconst verdict = JSON.parse(cleaned);\n\n// Escapar comillas simples para SQL\nconst escape = (str) => str ? str.replace(/'/g, \"''\") : null;\n\nreturn [{\n  json: {\n    ...verdict,\n    alerta: escape(verdict.alerta),\n    mensaje_hospital: escape(verdict.mensaje_hospital),\n    mensaje_gestor: escape(verdict.mensaje_gestor)\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1344,
+        128
+      ],
+      "id": "fe02e21d-4d50-462a-ad82-90cf06c3210c",
+      "name": "Code in JavaScript5"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO admission_events\n    (cedula, motivo_ingreso, hospital, decision, poliza_vigente,\n     cobertura_pct, alerta, mensaje_hospital, mensaje_gestor)\nVALUES (\n    '{{ $('Webhook').first().json.body.cedula }}',\n    '{{ $('Webhook').first().json.body.motivo_ingreso }}',\n    '{{ $('Webhook').first().json.body.hospitalid }}',\n    '{{ $json.decision }}',\n    {{ $json.poliza_vigente }},\n    {{ $json.cobertura_pct }},\n    '{{ $json.alerta }}',\n    '{{ $json.mensaje_hospital }}',\n    '{{ $json.mensaje_gestor }}'\n)\nRETURNING id",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1536,
+        128
+      ],
+      "id": "c8cbd61b-d20c-40b3-a648-c6916d128168",
+      "name": "Execute a SQL query1",
+      "credentials": {
+        "postgres": {
+          "id": "oZh0w95JLHO2Qc5p",
+          "name": "Postgres account 2"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        816,
+        128
+      ],
+      "id": "b54003e3-abda-42d7-84cc-ada85583d5a1",
+      "name": "Merge1",
+      "alwaysOutputData": false,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "url": "=http://172.17.0.1:3000/veredicto/{{ $json.id }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1744,
+        128
+      ],
+      "id": "d03795d3-e889-40f1-9f5d-bf9c88fdf632",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "/comprobacion",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -272,
+        112
+      ],
+      "id": "71912e61-ed8c-486f-9470-d61c33ecab6f",
+      "name": "Webhook",
+      "webhookId": "8f161a65-60d1-42c0-90a3-933329ae7861"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"id\": {{ $('Execute a SQL query1').first().json.id }} }",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1952,
+        128
+      ],
+      "id": "7def3872-e453-487f-ae75-9ef529c63f75",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT EXISTS (\n  SELECT 1\n  FROM patients\n  WHERE cedula = '{{ $json.cedula }}'\n) AS existe;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        112,
+        -176
+      ],
+      "id": "a5cd9e1b-774f-4eb5-8b08-718cb1f14e61",
+      "name": "EXISTS?",
+      "credentials": {
+        "postgres": {
+          "id": "TowNMrmNEqiO9DL3",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "99baf4e6-06bc-44ce-8f21-f454dc94ebd0",
+              "leftValue": "={{ $json.existe }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        336,
+        -176
+      ],
+      "id": "9e14ddf9-f840-4f92-a0fe-47d9f7a3188f",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"error\": \"no esta registrado en hospital\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        448,
+        48
+      ],
+      "id": "6c38933e-9acf-40f9-9ff1-505dbc1f6ede",
+      "name": "Respond to Webhook1"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT EXISTS (\n  SELECT 1\n  FROM insured\n  WHERE cedula = '{{ $json.cedula }}'\n) AS existe;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        128,
+        320
+      ],
+      "id": "cd7a2624-fd05-4f73-b91e-752da85dbcb5",
+      "name": "Execute a SQL query",
+      "credentials": {
+        "postgres": {
+          "id": "oZh0w95JLHO2Qc5p",
+          "name": "Postgres account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "a0027d6c-fb39-400a-b4e7-269f483a62bd",
+              "leftValue": "={{ $json.existe }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        352,
+        368
+      ],
+      "id": "3aa4930a-579d-4598-bfb8-ecbc0915225e",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"success\": false,\n  \"message\": \"La cédula no está registrada en seguro \",\n  \"cedula\": \"{{ $json.cedula }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        544,
+        544
+      ],
+      "id": "7a310386-b5c4-4c7f-86ad-879bd907d071",
+      "name": "Respond to Webhook2"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript3": {
+      "main": [
+        [
+          {
+            "node": "EXISTS?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript4": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DBHOSPITAL1": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DBSEGURO1": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript5": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript3",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Code in JavaScript4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "EXISTS?": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "DBHOSPITAL1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "DBSEGURO1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Webhook2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "1f8e1edd-94e4-4d6d-bec2-21302a04d6ef",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "467d3d5c9bdbee63a37284f783049baad7e474ca896b3513ade71cb01a03b898"
+  },
+  "id": "w1lH5pL8NA2h2LSD",
+  "tags": []
+}
