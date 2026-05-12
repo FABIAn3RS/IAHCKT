@@ -11,4 +11,6 @@ n8n is powered by gemini
 
 si por alguna razon falla en un momento suele ser porque usa una apikey gratuita de gemini, la cual en ocasiones se encuentra colapsada , se recomienda reintentar al menos 2 veces el servicio, el modelo no es rapido por lo que se pide encarecidamente paciencia al momento de enviar las peticiones
 
+Para probar la reactividad del sistema se recomienda tener las 2 interfaces abiertas (el formulario y la cola de notificaciones del seguro) para comprobar que se actualiza en tiempo real
+
 
