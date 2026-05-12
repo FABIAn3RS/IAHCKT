@@ -1,17 +1,19 @@
-export interface DatosAsegurado {
-  cedula: string;
-  nombre: string;
-  motivo_ingreso: string;
-  id_hospital: string;
-  creado_en: string;
-}
+async enviarDatos(datos: DatosAsegurado): Promise<void> {
+  this.limpiarIntervalo();
+  this.cargando.set(true);
+  this.veredicto.set(null);
 
-export interface Veredicto {
-  decision: string;
-  alerta: string;
-  mensaje_hospital: string;
-}
+  const payload = {
+    cedula: datos.cedula,
+    nombre: datos.nombre,
+    motivo_ingreso: datos.motivo_ingreso,
+    hospitalid: datos.id_hospital,
+    timestamp: new Date().toISOString()
+  };
 
-export interface VeredictoResponse {
-  data: Veredicto & { id: number; [key: string]: any };
-}
+  try {
+    const result = await firstValueFrom(
+      this.http.post<{ id: number }>(this.webhookUrl, payload)
+    );
+    console.log('Enviado a n8n:', result);
+    // resto del código...
