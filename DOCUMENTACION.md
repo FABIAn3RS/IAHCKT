@@ -21,7 +21,7 @@ DB Hospital  DB Seguro       ← consultas en paralelo
     Agente IA (Gemini)
         ↓
    ┌────┴────────────────┐
-Guarda en DB Seguro    POST al backend Python
+Guarda en DB Seguro    POST al backend Node js
 (admission_events)          ↓
                      Frontend muestra veredicto
 ```
@@ -51,7 +51,7 @@ Body que envía:
 ```
 
 **Recibir el veredicto:**
-El componente hace polling cada 3 segundos al backend Python:
+El componente hace polling cada 3 segundos al backend Node:
 ```
 GET http://localhost:3000/veredicto/ultimo
 ```
@@ -142,7 +142,7 @@ Devuelve siempre este JSON:
 
 ---
 
-### 6. Backend Python — FastAPI (`http://localhost:3000`)
+### 6. Backend Node  — FastAPI (`http://localhost:3000`)
 
 Servidor intermediario entre n8n y Angular. No tiene lógica de negocio, solo persiste y sirve el veredicto.
 
@@ -201,7 +201,7 @@ docker compose -f docker-compose.seguro.yml up -d
 docker compose -f docker-compose.n8n.yml up -d
 # Importar workflow.json en http://localhost:5678
 
-# 3. Backend Python
+# 3. Backend Node
 cd backend
 pip install -r requirements.txt
 uvicorn main:app --host 0.0.0.0 --port 3000
@@ -217,7 +217,7 @@ ng serve
 ## Notas para el equipo
 
 - El campo `cedula` es la llave que conecta todo — debe viajar en el body del webhook
-- El backend Python debe correr con `--host 0.0.0.0` para que Docker pueda alcanzarlo
+- El backend Node debe correr con `--host 0.0.0.0` para que Docker pueda alcanzarlo
 - n8n usa `host.docker.internal:3000` para llamar al backend porque corre dentro de Docker
 - El polling en Angular compara el `id` del último registro — si el id no cambia, no actualiza la vista
 - Los mensajes de Gemini pueden contener comillas simples; el INSERT usa parámetros `$1, $2...` para evitar errores SQL
